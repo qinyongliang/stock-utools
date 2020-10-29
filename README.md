@@ -1,6 +1,6 @@
 # 一款简易查看股票的插件
 
-![](screenshot.png)
+![](https://i.loli.net/2020/10/29/4S5OfdWNlYkXq1v.png)
 
 可自己搜索关心的股票代码并*回车*加入自选。
 

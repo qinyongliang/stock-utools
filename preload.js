@@ -53,8 +53,7 @@ window.exports = {
                 if (!data) {
                     utools.db.put({
                         _id: 'attention.list',
-                        data: ['sh000001', 'sh000300'],
-                        _rev: record._rev
+                        data: ['sh000001', 'sh000300']
                     })
                 }
             },
