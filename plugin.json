@@ -1,0 +1,18 @@
+{
+	"pluginName": "韭菜看板",
+	"description": "一款简易查看股票的工具",
+	"author": "qinyongliang",
+	"homepage": "https://github.com/qinyongliang/",
+	"preload": "preload.js",
+	"version": "0.0.0",
+	"logo": "icon.png",
+	"features": [
+		{
+			"code": "stock.list",
+			"cmds": [
+				"股票",
+				"stock"
+			]
+		}
+	]
+}
