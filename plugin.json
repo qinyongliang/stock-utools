@@ -4,7 +4,7 @@
 	"author": "qinyongliang",
 	"homepage": "https://github.com/qinyongliang/",
 	"preload": "preload.js",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"logo": "icon.png",
 	"features": [
 		{
