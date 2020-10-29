@@ -10,12 +10,30 @@ function render(list, callbackSetList, alert = []) {
                     const code = info[1];
                     if (info[2] && info[2].length > 0) {
                         const params = info[2].split(',');
-                        const change = ((parseFloat(params[3]) - parseFloat(params[2])) / parseFloat(params[2]) * 100).toFixed(2);
-                        return {
-                            title: params[0] + "丨" + code,
-                            description: `当前:${params[3]}丨涨跌:${change}丨今开:${params[1]}丨昨收:${params[2]}`,
-                            icon: change >= 0 ? 'up.png' : 'down.png',
-                            code: code
+                        if (code.startsWith("gb_")) {
+                            //美股格式不一样
+                            return {
+                                title: params[0] + "丨" + code,
+                                description: `当前:${params[1]}丨涨跌:${params[2]}丨今开:${params[5]}丨昨收:${params[26]}丨市值:${params[12]}`,
+                                icon: parseFloat(params[2]) >= 0 ? 'up.png' : 'down.png',
+                                code
+                            }
+                        } else if (code.startsWith("hk")) {
+                            //港格式不一样
+                            return {
+                                title: params[1] + "丨" + code,
+                                description: `当前:${params[6]}丨涨跌:${params[8]}丨今开:${params[2]}丨昨收:${params[3]}`,
+                                icon: parseFloat(params[8]) >= 0 ? 'up.png' : 'down.png',
+                                code
+                            }
+                        } else {
+                            const change = ((parseFloat(params[3]) - parseFloat(params[2])) / parseFloat(params[2]) * 100).toFixed(2);
+                            return {
+                                title: params[0] + "丨" + code,
+                                description: `当前:${params[3]}丨涨跌:${change}丨今开:${params[1]}丨昨收:${params[2]}`,
+                                icon: change >= 0 ? 'up.png' : 'down.png',
+                                code
+                            }
                         }
                     }
                     return null
@@ -61,9 +79,17 @@ window.exports = {
             search: (action, searchWord, callbackSetList) => {
                 if (searchWord.indexOf("丨") < 0) {
                     // 获取一些数据
-                    axios.get('http://suggest3.sinajs.cn/suggest/&key=' + encodeURI(searchWord))
+                    axios.get('http://suggest3.sinajs.cn/suggest/type=11,12,31,41&key=' + encodeURI(searchWord))
                         .then(res => {
-                            const renderList = res.data.match(/var suggestvalue="(.*)"/)[1].split(';').filter(v => v).map(line => line.split(',')[3]).filter(v => v)
+                            const renderList = res.data.match(/var suggestvalue="(.*)"/)[1].split(';').filter(v => v).map(line => {
+                                const params = line.split(',');
+                                if (params[1] === '41') {
+                                    return 'gb_' + params[3].replace('.','$')
+                                }else if(params[1] === '31'){
+                                    return 'hk' + params[3]
+                                }
+                                return params[3]
+                            }).filter(v => v)
                             render(renderList, callbackSetList);
                         })
                 }
@@ -104,7 +130,15 @@ window.exports = {
                             break
                         case 'open':
                             window.utools.hideMainWindow()
-                            require('electron').shell.openExternal(`https://finance.sina.com.cn/realstock/company/${code}/nc.shtml`)
+                            if (code.startsWith("gb_")) {
+                                //美股格式不一样
+                                require('electron').shell.openExternal(`https://stock.finance.sina.com.cn/usstock/quotes/${code.replace('gb_','').replace('$','')}.html`)
+                            } else if (code.startsWith("hk")) {
+                                //港格式不一样
+                                require('electron').shell.openExternal(`https://stock.finance.sina.com.cn/hkstock/quotes/${code.replace('hk','')}.html`)
+                            } else {
+                                require('electron').shell.openExternal(`https://finance.sina.com.cn/realstock/company/${code}/nc.shtml`)
+                            }
                             window.utools.outPlugin()
                             break
                     }
