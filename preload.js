@@ -3,11 +3,11 @@ const axios = require('axios')
 let lastList = [];
 let callback;
 //2s定时刷新列表
-setInterval(() => {
-    if (lastList && lastList.length > 0 && callback) {
-        render(lastList, callback);
-    }
-}, 2000);
+// setInterval(() => {
+//     if (lastList && lastList.length > 0 && callback) {
+//         render(lastList, callback);
+//     }
+// }, 2000);
 function render(list, callbackSetList, alert = []) {
     if (alert.length == 0) {
         lastList = list;
@@ -25,7 +25,7 @@ function render(list, callbackSetList, alert = []) {
                             //美股格式不一样
                             return {
                                 title: params[0] + "丨" + code,
-                                description: `当前:\t${params[1]}丨涨跌:\t${params[2]}丨今开:\t${params[5]}丨昨收:\t${params[26]}丨市值:\t${params[12]}`,
+                                description: `当前:\t${params[1]}丨涨跌:\t${params[2]} (${(parseFloat(params[2]) * 0.01 * parseFloat(params[26])).toFixed(2)}$)丨今开:\t${params[5]}丨昨收:\t${params[26]}丨市值:\t${params[12]}`,
                                 icon: parseFloat(params[2]) >= 0 ? 'up.png' : 'down.png',
                                 code
                             }
@@ -33,7 +33,7 @@ function render(list, callbackSetList, alert = []) {
                             //港格式不一样
                             return {
                                 title: params[1] + "丨" + code,
-                                description: `当前:\t${params[6]}丨涨跌:\t${params[8]}丨今开:\t${params[2]}丨昨收:\t${params[3]}`,
+                                description: `当前:\t${params[6]}丨涨跌:\t${params[8]} (${(parseFloat(params[8]) * 0.01 * parseFloat(params[3])).toFixed(2)}HK$)丨最高:\t${params[4]}丨最低:\t${params[5]}丨今开:\t${params[2]}丨昨收:\t${params[3]}`,
                                 icon: parseFloat(params[8]) >= 0 ? 'up.png' : 'down.png',
                                 code
                             }
@@ -41,7 +41,7 @@ function render(list, callbackSetList, alert = []) {
                             const change = ((parseFloat(params[3]) - parseFloat(params[2])) / parseFloat(params[2]) * 100).toFixed(2);
                             return {
                                 title: params[0] + "丨" + code,
-                                description: `当前:\t${params[3]}丨涨跌:\t${change}丨今开:\t${params[1]}丨昨收:\t${params[2]}`,
+                                description: `当前:\t${params[3]}丨涨跌:\t${change} (${(change * 0.01 * parseFloat(params[2])).toFixed(2)}¥)丨最高:\t${params[4]}丨最低:\t${params[5]}丨今开:\t${params[1]}丨昨收:\t${params[2]}`,
                                 icon: change >= 0 ? 'up.png' : 'down.png',
                                 code
                             }
@@ -156,6 +156,11 @@ window.exports = {
                     let renderList = []
                     if (data && data.has(code)) {
                         renderList.push({
+                            title: '打开详情',
+                            action: 'open',
+                            code
+                        })
+                        renderList.push({
                             title: '移出自选',
                             action: 'remove',
                             code
@@ -166,12 +171,12 @@ window.exports = {
                             action: 'save',
                             code
                         })
+                        renderList.push({
+                            title: '打开详情',
+                            action: 'open',
+                            code
+                        })
                     }
-                    renderList.push({
-                        title: '打开详情',
-                        action: 'open',
-                        code
-                    })
                     callbackSetList(renderList)
                 }
             },
