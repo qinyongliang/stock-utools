@@ -1,21 +1,38 @@
-const axios = require('axios')
+const axios = require('axios');
+var request = require('request');
+var iconv = require('iconv-lite');
 
 let lastList = [];
 let callback;
-//2s定时刷新列表
-// setInterval(() => {
-//     if (lastList && lastList.length > 0 && callback) {
-//         render(lastList, callback);
-//     }
-// }, 2000);
+
+//设置请求头
+const options = {
+	encoding:null,
+	headers:{
+		"Content-Type":"text/html",
+		//"Accept-Encoding":"gzip, deflate, br",
+		"Accept-Language":"zh-CN,zh;q",
+		"DNT":"1",
+		"Host":"hq.sinajs.cn",
+		"Sec-Fetch-Site":"cross-site",
+		"Referer":"https://finance.sina.com.cn"
+	}
+};
+
 function render(list, callbackSetList, alert = []) {
+	
     if (alert.length == 0) {
         lastList = list;
     }
     let renderList = list.filter(v => v.match(/[a-zA-Z]/)).join(',')
-    axios.get('http://hq.sinajs.cn/list=' + renderList)
-        .then(res => {
-            const render = res.data.split('\n').filter(v => v && v.length > 0).map(line => {
+	request('https://hq.sinajs.cn/?list=' + renderList,options,function(error, response, body){
+		
+		//获取buffer格式再进行解码
+		var buffer = new Buffer(body);
+		var realStr = iconv.decode(buffer,'GB18030');
+		
+		if (!error && response.statusCode == 200) {
+			const render = realStr.split('\n').filter(v => v && v.length > 0).map(line => {
                 try {
                     const info = line.match(/var hq_str_(.*)="(.*)"/)
                     const code = info[1];
@@ -53,7 +70,9 @@ function render(list, callbackSetList, alert = []) {
                 }
             }).filter(v => v)
             callbackSetList([...alert, ...render])
-        })
+		}
+	});
+    
 }
 window.exports = {
     "stock.list": { // 注意：键对应的是 plugin.json 中的 features.code
@@ -105,6 +124,7 @@ window.exports = {
                 if (searchWord == '') {
                     utools.redirect('股票');
                 }
+				
             },
             // 用户选择列表中某个条目时被调用
             select: (action, itemData, callbackSetList) => {
